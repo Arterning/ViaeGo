@@ -1,0 +1,41 @@
+# ViaeGo 代理服务器配置文件
+
+# 运行模式：server（服务器模式）或 client（客户端模式）
+mode: server
+
+# 服务器模式配置
+server:
+  # 监听地址
+  host: 0.0.0.0
+  # HTTP代理端口（设置为0则不启动HTTP代理）
+  httpPort: 8089
+  # SOCKS5代理端口（设置为0则不启动SOCKS5代理）
+  socksPort: 1080
+  # 用户名（留空则不需要认证）
+  username: ""
+  # 密码（留空则不需要认证）
+  password: ""
+
+# 客户端模式配置
+client:
+  # 本地监听地址
+  localHost: 127.0.0.1
+  # 本地监听端口
+  localPort: 1080
+  # 代理类型：http 或 socks5
+  proxyType: socks5
+  # 远程代理服务器地址
+  remoteHost: example.com
+  # 远程代理服务器端口
+  remotePort: 1080
+  # 远程服务器用户名（留空则不需要认证）
+  username: ""
+  # 远程服务器密码（留空则不需要认证）
+  password: ""
+
+# 日志配置
+log:
+  # 日志级别：debug, info, warn, error
+  level: info
+  # 日志文件路径（留空则只输出到控制台）
+  filePath: ""
