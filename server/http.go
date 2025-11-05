@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/Arterning/ViaeGo/auth"
@@ -131,10 +132,13 @@ func (h *HTTPProxy) handleHTTP(clientConn net.Conn, req *http.Request) {
 	req.Header.Del("Proxy-Authorization")
 	req.Header.Del("Proxy-Connection")
 
+	// 确保Host包含端口号
+	targetAddr := ensurePort(req.URL.Host, req.URL.Scheme)
+
 	// 连接到目标服务器
-	targetConn, err := net.DialTimeout("tcp", req.URL.Host, 10*time.Second)
+	targetConn, err := net.DialTimeout("tcp", targetAddr, 10*time.Second)
 	if err != nil {
-		logger.Errorf("连接到目标服务器 %s 失败: %v", req.URL.Host, err)
+		logger.Errorf("连接到目标服务器 %s 失败: %v", targetAddr, err)
 		clientConn.Write([]byte("HTTP/1.1 502 Bad Gateway\r\n\r\n"))
 		return
 	}
@@ -148,6 +152,20 @@ func (h *HTTPProxy) handleHTTP(clientConn net.Conn, req *http.Request) {
 
 	// 将响应转发回客户端
 	io.Copy(clientConn, targetConn)
+}
+
+// ensurePort 确保地址包含端口号
+func ensurePort(host, scheme string) string {
+	// 如果已经包含端口号，直接返回
+	if strings.Contains(host, ":") {
+		return host
+	}
+
+	// 根据协议添加默认端口
+	if scheme == "https" {
+		return net.JoinHostPort(host, "443")
+	}
+	return net.JoinHostPort(host, "80")
 }
 
 // sendAuthRequired 发送需要认证的响应
