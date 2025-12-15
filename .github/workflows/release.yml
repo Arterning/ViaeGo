@@ -1,0 +1,141 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+      build_windows:
+        description: 'Build for Windows amd64'
+        required: true
+        type: boolean
+        default: true
+      build_linux:
+        description: 'Build for Linux amd64'
+        required: true
+        type: boolean
+        default: true
+      build_macos:
+        description: 'Build for macOS (amd64 and arm64)'
+        required: true
+        type: boolean
+        default: false
+      build_linux_arm:
+        description: 'Build for Linux arm64'
+        required: true
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    name: Build Binaries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.1'
+
+      - name: Get dependencies
+        run: go mod download
+
+      - name: Build Windows amd64
+        if: ${{ github.event.inputs.build_windows == 'true' }}
+        run: |
+          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o viaego-windows-amd64.exe .
+          echo "Built Windows amd64"
+
+      - name: Build Linux amd64
+        if: ${{ github.event.inputs.build_linux == 'true' }}
+        run: |
+          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o viaego-linux-amd64 .
+          echo "Built Linux amd64"
+
+      - name: Build macOS amd64
+        if: ${{ github.event.inputs.build_macos == 'true' }}
+        run: |
+          GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o viaego-darwin-amd64 .
+          echo "Built macOS amd64"
+
+      - name: Build macOS arm64
+        if: ${{ github.event.inputs.build_macos == 'true' }}
+        run: |
+          GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o viaego-darwin-arm64 .
+          echo "Built macOS arm64"
+
+      - name: Build Linux arm64
+        if: ${{ github.event.inputs.build_linux_arm == 'true' }}
+        run: |
+          GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o viaego-linux-arm64 .
+          echo "Built Linux arm64"
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          release_name: Release ${{ github.event.inputs.version }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Windows amd64
+        if: ${{ github.event.inputs.build_windows == 'true' }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./viaego-windows-amd64.exe
+          asset_name: viaego-windows-amd64.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload Linux amd64
+        if: ${{ github.event.inputs.build_linux == 'true' }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./viaego-linux-amd64
+          asset_name: viaego-linux-amd64
+          asset_content_type: application/octet-stream
+
+      - name: Upload macOS amd64
+        if: ${{ github.event.inputs.build_macos == 'true' }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./viaego-darwin-amd64
+          asset_name: viaego-darwin-amd64
+          asset_content_type: application/octet-stream
+
+      - name: Upload macOS arm64
+        if: ${{ github.event.inputs.build_macos == 'true' }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./viaego-darwin-arm64
+          asset_name: viaego-darwin-arm64
+          asset_content_type: application/octet-stream
+
+      - name: Upload Linux arm64
+        if: ${{ github.event.inputs.build_linux_arm == 'true' }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./viaego-linux-arm64
+          asset_name: viaego-linux-arm64
+          asset_content_type: application/octet-stream
