@@ -50,31 +50,31 @@ jobs:
       - name: Build Windows amd64
         if: ${{ github.event.inputs.build_windows == 'true' }}
         run: |
-          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o viaego-windows-amd64.exe .
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o viaego-windows-amd64.exe .
           echo "Built Windows amd64"
 
       - name: Build Linux amd64
         if: ${{ github.event.inputs.build_linux == 'true' }}
         run: |
-          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o viaego-linux-amd64 .
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o viaego-linux-amd64 .
           echo "Built Linux amd64"
 
       - name: Build macOS amd64
         if: ${{ github.event.inputs.build_macos == 'true' }}
         run: |
-          GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o viaego-darwin-amd64 .
+          CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o viaego-darwin-amd64 .
           echo "Built macOS amd64"
 
       - name: Build macOS arm64
         if: ${{ github.event.inputs.build_macos == 'true' }}
         run: |
-          GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o viaego-darwin-arm64 .
+          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o viaego-darwin-arm64 .
           echo "Built macOS arm64"
 
       - name: Build Linux arm64
         if: ${{ github.event.inputs.build_linux_arm == 'true' }}
         run: |
-          GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o viaego-linux-arm64 .
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o viaego-linux-arm64 .
           echo "Built Linux arm64"
 
       - name: Create Release and Upload Assets
